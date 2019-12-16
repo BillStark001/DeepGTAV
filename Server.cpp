@@ -94,6 +94,11 @@ void Server::checkRecvMessage() {
 		const Value& commands = d["commands"];
 		scenario.setCommands(commands["throttle"].GetFloat(), commands["brake"].GetFloat(), commands["steering"].GetFloat());
 	}
+	else if (d.HasMember("camstate")) {
+		printf("Camera State received\n");
+		const Value& states = d["camstate"];
+		scenario.setCamState(states["pos"], states["rot"]);
+	}
 	else if (d.HasMember("config")) {
 		//Change the message values and keep the others the same
 		printf("Config received\n");

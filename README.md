@@ -6,7 +6,7 @@
 
 ## Installation
 1. Make sure GTAV is on version 1.0.1180.2 or below
-2. Copy-paste the contents of *bin/Release* under your GTAV installation directory
+2. Copy-paste the contents of *bin/Release* and *Release* under your GTAV installation directory
 3. Replace your saved game data in *Documents/Rockstar Games/GTA V/Profiles/* with the contents of *bin/SaveGame*
 4. Download *[paths.xml](https://drive.google.com/file/d/0B6pR5O2YrmHnNU9EMDBSSFpMV00/view?usp=sharing)* and store it also in the GTAV installation directory. 
 
@@ -118,6 +118,18 @@ Here follows an example of the *Commands* message:
   "throttle": 1.0,
   "brake": 0.0,
   "steering": -0.5
+}}
+```
+
+### Camera State
+
+Assigns the *Position* and *Rotation* states of the *Camera*. Note that unit of *Rotation* is *Degree* but not *Radian*.
+
+Here follows an example of the *Camera State* message:
+```json
+{"camstate": {
+  "pos": [0, -5, 9],
+  "rot": [-13, 0, 0]
 }}
 ```
 

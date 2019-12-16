@@ -27,6 +27,8 @@ private:
 	Cam camera = NULL;
 	Vector3 dir;
 
+	
+
 	float x, y;
 	int hour, minute;
 	const char* _weather;
@@ -51,6 +53,15 @@ private:
 	float currentBrake = 0.0;
 	float currentSteering = 0.0;
 
+	Vector3 currentCamPos = { 0 };
+	Vector3 currentCamRot = { 0 };
+	const double _pos_def_x = 0;
+	const double _pos_def_y = 0.5;
+	const double _pos_def_z = 0.8;
+	const double _rot_def_x = 0;
+	const double _rot_def_y = 0;
+	const double _rot_def_z = 0;
+
 	Rewarder* rewarder;
 	std::clock_t lastSafetyCheck;
 	int _drivingMode;
@@ -66,6 +77,7 @@ public:
 	void stop();
 	void config(const Value& sc, const Value& dc);
 	void setCommands(float throttle, float brake, float steering);
+	void setCamState(const Value& pos, const Value& rot);
 	void run();
 
 	ScreenCapturer* screenCapturer;

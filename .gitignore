@@ -1,2 +1,5 @@
+.vs/
 tmp/
 bin/Release/paths.xml
+VPilot/__pycache__/
+VPilot/deserted.py

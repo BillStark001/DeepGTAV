@@ -16,6 +16,8 @@ void Scenario::parseScenarioConfig(const Value& sc, bool setDefaults) {
 	const Value& weather = sc["weather"];
 	const Value& vehicle = sc["vehicle"];
 	const Value& drivingMode = sc["drivingMode"];
+	const Value& camPos = sc["camPos"];
+	const Value& camRot = sc["camRot"];
 
 	if (location.IsArray()) {
 		if (!location[0].IsNull()) x = location[0].GetFloat();
@@ -56,6 +58,42 @@ void Scenario::parseScenarioConfig(const Value& sc, bool setDefaults) {
 	else if (setDefaults) {
 		_drivingMode = -1;
 	}
+	if (camPos.IsArray()) {
+		float x, y, z;
+		x = _pos_def_x;
+		y = _pos_def_y;
+		z = _pos_def_z;
+		if (camPos[0].IsNumber()) x = camPos[0].GetFloat();
+		if (camPos[1].IsNumber()) y = camPos[1].GetFloat();
+		if (camPos[2].IsNumber()) z = camPos[2].GetFloat();
+		currentCamPos.x = x;
+		currentCamPos.y = y;
+		currentCamPos.z = z;
+	}
+	else if (setDefaults) {
+		currentCamPos.x = _pos_def_x;
+		currentCamPos.y = _pos_def_y;
+		currentCamPos.z = _pos_def_z;
+	}
+
+	if (camRot.IsArray()) {
+		float x, y, z;
+		x = _rot_def_x;
+		y = _rot_def_y;
+		z = _rot_def_z;
+		if (camRot[0].IsNumber()) x = camRot[0].GetFloat();
+		if (camRot[1].IsNumber()) y = camRot[1].GetFloat();
+		if (camRot[2].IsNumber()) z = camRot[2].GetFloat();
+		currentCamRot.x = x;
+		currentCamRot.y = y;
+		currentCamRot.z = z;
+	}
+	else if (setDefaults) {
+		currentCamRot.x = _rot_def_x;
+		currentCamRot.y = _rot_def_y;
+		currentCamRot.z = _rot_def_z;
+	}
+
 }
 
 void Scenario::parseDatasetConfig(const Value& dc, bool setDefaults) {
@@ -179,14 +217,16 @@ void Scenario::buildScenario() {
 
 	GAMEPLAY::SET_WEATHER_TYPE_NOW_PERSIST((char*)_weather);
 
+	// Set camera pos and rot
+
 	rotation = ENTITY::GET_ENTITY_ROTATION(vehicle, 1);
 	CAM::DESTROY_ALL_CAMS(TRUE);
 	camera = CAM::CREATE_CAM("DEFAULT_SCRIPTED_CAMERA", TRUE);
 	if (strcmp(_vehicle, "packer") == 0) CAM::ATTACH_CAM_TO_ENTITY(camera, vehicle, 0, 2.35, 1.7, TRUE);
-	else CAM::ATTACH_CAM_TO_ENTITY(camera, vehicle, 0, 0.5, 0.8, TRUE);
+	else CAM::ATTACH_CAM_TO_ENTITY(camera, vehicle, currentCamPos.x, currentCamPos.y, currentCamPos.z, TRUE);
 	CAM::SET_CAM_FOV(camera, 60);
 	CAM::SET_CAM_ACTIVE(camera, TRUE);
-	CAM::SET_CAM_ROT(camera, rotation.x, rotation.y, rotation.z, 1);
+	CAM::SET_CAM_ROT(camera, rotation.x + currentCamRot.x, rotation.y + currentCamRot.y, rotation.z + currentCamRot.z, 1);
 	CAM::SET_CAM_INHERIT_ROLL_VEHICLE(camera, TRUE);
 	CAM::RENDER_SCRIPT_CAMS(TRUE, FALSE, 0, TRUE, TRUE);
 
@@ -230,8 +270,12 @@ void Scenario::run() {
 	if (running) {
 		std::clock_t now = std::clock();
 
+		// Set Camera State
+		// Actually it's not a scientific way to do Euler angle additions......
+		// It depends on special conditions of ENTITY::GET_ENTITY_ROTATION(vehicle, 1)......
 		Vector3 rotation = ENTITY::GET_ENTITY_ROTATION(vehicle, 1);
-		CAM::SET_CAM_ROT(camera, rotation.x, rotation.y, rotation.z, 1);
+		CAM::ATTACH_CAM_TO_ENTITY(camera, vehicle, currentCamPos.x, currentCamPos.y, currentCamPos.z, TRUE);
+		CAM::SET_CAM_ROT(camera, rotation.x + currentCamRot.x, rotation.y + currentCamRot.y, rotation.z + currentCamRot.z, 1);
 
 		if (_drivingMode < 0) {
 			CONTROLS::_SET_CONTROL_NORMAL(27, 71, currentThrottle); //[0,1]
@@ -283,6 +327,19 @@ void Scenario::setCommands(float throttle, float brake, float steering) {
 	currentThrottle = throttle;
 	currentBrake = brake;
 	currentSteering = steering;
+}
+
+void Scenario::setCamState(const Value& camPos, const Value& camRot) {
+	if (camPos.IsArray()) {
+		if (camPos[0].IsNumber()) currentCamPos.x = camPos[0].GetFloat();
+		if (camPos[1].IsNumber()) currentCamPos.y = camPos[1].GetFloat();
+		if (camPos[2].IsNumber()) currentCamPos.z = camPos[2].GetFloat();
+	}
+	if (camRot.IsArray()) {
+		if (camRot[0].IsNumber()) currentCamRot.x = camRot[0].GetFloat();
+		if (camRot[1].IsNumber()) currentCamRot.y = camRot[1].GetFloat();
+		if (camRot[2].IsNumber()) currentCamRot.z = camRot[2].GetFloat();
+	}
 }
 
 StringBuffer Scenario::generateMessage() {
